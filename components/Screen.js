@@ -54,56 +54,82 @@ const Screen = () => {
         setEditIndex(index);
         setEditedText(newTodos[index].text);
         setTodos(newTodos);
-      };
+    };
 
-      const handleSaveEdit = (index) => {
+    const handleSaveEdit = (index) => {
         const newTodos = [...todos];
-        newTodos[index].text = editedText;
+        if (editedText !== '') { 
+            newTodos[index].text = editedText;
+            newTodos[index].isEditing = false;
+            setTodos(newTodos);
+            setEditIndex(null);
+        }
+    };
+
+    const handleCancelEdit = (index) => {
+        const newTodos = [...todos];
         newTodos[index].isEditing = false;
         setTodos(newTodos);
         setEditIndex(null);
-      };
-    
-      const handleCancelEdit = (index) => {
-        const newTodos = [...todos];
-        newTodos[index].isEditing = false;
-        setTodos(newTodos);
-        setEditIndex(null);
-      };  
+    };
 
     const TodoItem = ({ todo, index }) => {
         return (
-            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', margin: 0.5, fontSize: 25, color: '#000', padding: 5 }}>
+            <View style={styles.todoItemContainer}>
                 {todo.isEditing ? (
                     <>
-                    <TouchableOpacity onPress={() => handleSaveEdit(index)} key="save-edit">
-                        <MaterialIcons name="done" size={24} color="green" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleCancelEdit(index)} key="cancel-edit">
-                        <MaterialIcons name="cancel" size={24} color="#e04400" />
-                    </TouchableOpacity>
-                    <TextInput
-                    style={{ color: todo.isCompleted ? 'gray' : '#000', fontSize: 22, textDecorationLine: todo.isCompleted ? 'line-through' : 'none', borderLeftWidth: 1, borderLeftColor: 'red', padding: 5, backgroundColor: '#fff', height: 35, fontSize: 20, opacity: 0.8, flex: 1}}
-                    value={editedText}
-                    onChangeText={(text) => setEditedText(text)}
-                    key="input-edit"
-                    />
+                        <TouchableOpacity onPress={() => handleSaveEdit(index)} key="save-edit">
+                            <MaterialIcons name="done-outline" size={24} color="green" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleCancelEdit(index)} key="cancel-edit">
+                            <MaterialIcons name="cancel" size={24} color="#e04400" />
+                        </TouchableOpacity>
+                        <TextInput
+                            style={[
+                                styles.editInput,
+                                {
+                                    color: todo.isCompleted ? 'gray' : '#000',
+                                    textDecorationLine: todo.isCompleted ? 'line-through' : 'none',
+                                },
+                            ]}
+                            value={editedText}
+                            onChangeText={(text) => setEditedText(text)}
+                            onSubmitEditing={() => {
+                                if (editedText.trim() !== '') {
+                                    handleSaveEdit(index);
+                                }
+                            }}
+                            key="input-edit"
+                            blurOnSubmit={false}
+                        />
                     </>
                 ) : (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                    <TouchableOpacity onPress={() => handleToggleCompletion(index)} key="complate-butt">
-                        <MaterialIcons name="done" size={24} color={todo.isCompleted ? "#437a49" : "grey" }/>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleStartEdit(index)} key="edit-butt">
-                        <MaterialIcons name="edit" size={24} color="#42b0f5" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDeleteTodo(index)} key="del-butt">
-                        <MaterialIcons name="close" size={24} color="#e04400" />
-                    </TouchableOpacity>
-                    <Text style={{ color: todo.isCompleted ? 'gray' : '#000', fontSize: 22, textDecorationLine: todo.isCompleted ? 'line-through' : 'none', borderLeftWidth: 1, borderLeftColor: 'red', padding: 5, backgroundColor: '#fff', height: 35, fontSize: 20, opacity: 0.8, flex: 1 }}>
-                    {todo.text}
-                    </Text>                    
-                </View> 
+                    <View style={styles.todoItemInnerContainer}>
+                        <TouchableOpacity onPress={() => handleToggleCompletion(index)} key="complete-butt">
+                            <MaterialIcons
+                                name="done"
+                                size={24}
+                                color={todo.isCompleted ? '#437a49' : 'grey'}
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleStartEdit(index)}>
+                            <Text
+                                style={[
+                                    styles.todoItemText,
+                                    {
+                                        color: todo.isCompleted ? 'gray' : '#000',
+                                        textDecorationLine: todo.isCompleted ? 'line-through' : 'none',
+                                    },
+                                ]}
+                            >
+                                {todo.text}
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleDeleteTodo(index)} key="del-butt">
+                            <MaterialIcons name="close" size={24} color="#e04400" />
+                        </TouchableOpacity>
+                        
+                    </View>
                 )}
             </View>
         );
@@ -121,72 +147,175 @@ const Screen = () => {
 
     return (
         <View style={styles.main}>
-            <View style={{ backgroundColor: 'white', borderTopWidth: 10, borderTopColor: 'brown', padding: 10 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.headerContainer}>
+                <View style={styles.headerInnerContainer}>
                     {todos.length > 0 && (
-                    <TouchableOpacity onPress={handleToggleAll} key="complate-all-butt">
-                        <MaterialIcons
-                        name='check-box'
-                        size={30}
-                        color={isAllCompleted ? '#437a49' : 'grey'}
-                        />
-                    </TouchableOpacity>
+                        <TouchableOpacity onPress={handleToggleAll} key="complete-all-butt">
+                            <MaterialIcons
+                                name='check-box'
+                                size={30}
+                                color={isAllCompleted ? '#437a49' : 'grey'}
+                            />
+                        </TouchableOpacity>
                     )}
                     <TextInput
-                    style={styles.input}
-                    placeholder="What needs to be done?"
-                    placeholderTextColor="gray"
-                    value={todoText}
-                    onChangeText={(text) => setTodoText(text)}
-                    onSubmitEditing={handleAddTodo}
-                    key="new-todo-input"
+                        style={styles.input}
+                        placeholder="What needs to be done?"
+                        placeholderTextColor="gray"
+                        value={todoText}
+                        onChangeText={(text) => setTodoText(text)}
+                        onSubmitEditing={handleAddTodo}
+                        key="new-todo-input"
                     />
                 </View>
             </View>
             <FlatList
                 data={filteredTodos()}
                 keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => (
-                    <TodoItem todo={item} index={index} />
-                )}
+                renderItem={({ item, index }) => <TodoItem todo={item} index={index} />}
             />
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#83756f' }}>{countActiveTodos()} items left</Text>
-                <View style={{ flexDirection: 'row' }}>
+            <View style={styles.footerContainer}>
+                <Text style={styles.footerText}>{countActiveTodos()} items left</Text>
+                <View style={styles.filterButtonsContainer}>
                     <TouchableOpacity onPress={() => setCurrentFilter('All')} key="view-all-butt">
-                        <Text style={{ fontSize: 12, color: '#83756f', fontWeight: currentFilter === 'All' ? 'bold' : 'normal', marginRight: 5 }}>All</Text>
+                        <Text
+                            style={[
+                                styles.filterButtonText,
+                                { fontWeight: currentFilter === 'All' ? 'bold' : 'normal' },
+                            ]}
+                        >
+                            All
+                        </Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => setCurrentFilter('Active')} key="view-active-butt">
-                        <Text style={{ fontSize: 12, color: '#83756f', fontWeight: currentFilter === 'Active' ? 'bold' : 'normal', marginRight: 5 }}>Active</Text>
+                        <Text
+                            style={[
+                                styles.filterButtonText,
+                                { fontWeight: currentFilter === 'Active' ? 'bold' : 'normal' },
+                            ]}
+                        >
+                            Active
+                        </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setCurrentFilter('Completed')} key="view-complated-butt">
-                        <Text style={{ fontSize: 12, color: '#83756f', fontWeight: currentFilter === 'Completed' ? 'bold' : 'normal' }}>Completed</Text>
+                    <TouchableOpacity onPress={() => setCurrentFilter('Completed')} key="view-completed-butt">
+                        <Text
+                            style={[
+                                styles.filterButtonText,
+                                { fontWeight: currentFilter === 'Completed' ? 'bold' : 'normal' },
+                            ]}
+                        >
+                            Completed
+                        </Text>
                     </TouchableOpacity>
                 </View>
-                {todos.some((todo) => todo.isCompleted) && (
-                    <TouchableOpacity onPress={clearCompleted} key="clear-all-complated-butt">
-                        <Text style={{ fontSize: 12, color: 'red', backgroundColor: 'rgba(0, 0, 0, 0.1)', color: '#777'}}>Clear Completed</Text>
-                    </TouchableOpacity>
-                )}
+                <TouchableOpacity
+                    onPress={clearCompleted}
+                    key="clear-completed-butt"
+                >
+                    <Text style={{
+                        ...styles.clearCompletedText,
+                        display: todos.some((todo) => todo.isCompleted) ? 'block' : 'none'
+                    }}>Clear Completed</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     main: {
         width: '90%',
     },
+    headerContainer: {
+        backgroundColor: 'white',
+        borderTopWidth: 10,
+        borderTopColor: 'brown',
+        padding: 10,
+    },
+    headerInnerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     input: {
-        backgroundColor: '#fff',
-        height: 35,
-        fontSize: 20,
-        opacity: 0.8,
-        flex: 1,
-        borderLeftWidth: 1,
-        borderLeftColor: 'red',
-        paddingLeft: 5,
+        ...commonInputStyles,
+    },
+    footerContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    footerText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#83756f',
+    },
+    filterButtonsContainer: {
+        paddingRight: 0,
+        flexDirection: 'row',
+    },
+    filterButtonText: {
+        fontSize: 12,
+        color: '#83756f',
+        marginRight: 5,
+    },
+    clearCompletedText: {
+        fontSize: 12,
+        color: 'red',
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        color: '#777',
+    },
+    todoItemContainer: {
+        ...commonItemStyles,
+    },
+    editInput: {
+        ...commonInputStyles,
+    },
+    todoItemInnerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 15,
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+    },
+    todoItemText: {
+        ...commonTextStyles,
     },
 });
+
+const commonInputStyles = {
+    backgroundColor: '#fff',
+    height: 35,
+    fontSize: 20,
+    opacity: 0.8,
+    flex: 1,
+    borderLeftWidth: 1,
+    borderLeftColor: 'red',
+    paddingLeft: 5,
+};
+
+const commonItemStyles = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    margin: 0.5,
+    fontSize: 25,
+    color: '#000',
+    padding: 5,
+};
+
+const commonTextStyles = {
+    color: 'gray',
+    fontSize: 22,
+    textDecorationLine: 'line-through',
+    borderLeftWidth: 1,
+    borderLeftColor: 'red',
+    padding: 5,
+    backgroundColor: '#fff',
+    height: 35,
+    fontSize: 20,
+    opacity: 0.8,
+    flex: 1,
+};
 
 export default Screen;
