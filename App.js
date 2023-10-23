@@ -5,8 +5,8 @@ import Screen from './components/Screen';
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Todos</Text>
-      <Screen />
+        <Text style={styles.title}>Todos</Text>
+        <Screen />
     </View>
   );
 }
@@ -23,6 +23,6 @@ const styles = StyleSheet.create({
     color: 'grey',
     opacity: .3,
     padding: 10,
-    marginTop: 20,
+    top: 10,
   },
 });
