@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { StyleSheet, TextInput, View, FlatList, Text, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -9,6 +9,7 @@ const Screen = () => {
     const [currentFilter, setCurrentFilter] = useState('All');
     const [editIndex, setEditIndex] = useState(null);
     const [editedText, setEditedText] = useState('');
+    const inputRef = useRef();
 
     const handleAddTodo = () => {
         if (todoText.trim() === '') {
@@ -92,14 +93,21 @@ const Screen = () => {
                                     textDecorationLine: todo.isCompleted ? 'line-through' : 'none',
                                 },
                             ]}
+                            ref={inputRef}
+                            onChangeText={setEditedText}
                             value={editedText}
-                            onChangeText={(text) => setEditedText(text)}
                             onSubmitEditing={() => {
                                 if (editedText.trim() !== '') {
                                     handleSaveEdit(index);
                                 }
+                                else {
+                                    handleDeleteTodo(index);
+                                }
                             }}
                             key="input-edit"
+                            onBlur={setTimeout(() => {
+                                inputRef.current?.focus()
+                            }, 0)}            
                             blurOnSubmit={false}
                         />
                     </>
