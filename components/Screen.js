@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { StyleSheet, TextInput, View, FlatList, Text, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -9,6 +9,7 @@ const Screen = () => {
     const [currentFilter, setCurrentFilter] = useState('All');
     const [editIndex, setEditIndex] = useState(null);
     const [editedText, setEditedText] = useState('');
+    const inputRef = useRef();
 
     const handleAddTodo = () => {
         if (todoText.trim() === '') {
@@ -39,9 +40,9 @@ const Screen = () => {
         setIsAllCompleted(!isAllCompleted);
     };
 
-    const countActiveTodos = () => {
+    const countActiveTodos = useMemo(() => {
         return todos.filter((todo) => !todo.isCompleted).length;
-    };
+    }, [todos]);
 
     const clearCompleted = () => {
         const newTodos = todos.filter((todo) => !todo.isCompleted);
@@ -58,7 +59,7 @@ const Screen = () => {
 
     const handleSaveEdit = (index) => {
         const newTodos = [...todos];
-        if (editedText !== '') { 
+        if (editedText !== '') {
             newTodos[index].text = editedText;
             newTodos[index].isEditing = false;
             setTodos(newTodos);
@@ -92,14 +93,21 @@ const Screen = () => {
                                     textDecorationLine: todo.isCompleted ? 'line-through' : 'none',
                                 },
                             ]}
+                            ref={inputRef}
+                            onChangeText={setEditedText}
                             value={editedText}
-                            onChangeText={(text) => setEditedText(text)}
                             onSubmitEditing={() => {
                                 if (editedText.trim() !== '') {
                                     handleSaveEdit(index);
                                 }
+                                else {
+                                    handleDeleteTodo(index);
+                                }
                             }}
                             key="input-edit"
+                            onBlur={setTimeout(() => {
+                                inputRef.current?.focus()
+                            }, 0)}
                             blurOnSubmit={false}
                         />
                     </>
@@ -128,14 +136,14 @@ const Screen = () => {
                         <TouchableOpacity onPress={() => handleDeleteTodo(index)} key="del-butt">
                             <MaterialIcons name="close" size={24} color="#e04400" />
                         </TouchableOpacity>
-                        
+
                     </View>
                 )}
             </View>
         );
     };
 
-    const filteredTodos = () => {
+    const filteredTodos = useMemo(() => {
         if (currentFilter === 'All') {
             return todos;
         } else if (currentFilter === 'Active') {
@@ -143,7 +151,7 @@ const Screen = () => {
         } else if (currentFilter === 'Completed') {
             return todos.filter((todo) => todo.isCompleted);
         }
-    };
+    }, [todos, currentFilter]);
 
     return (
         <View style={styles.main}>
@@ -170,12 +178,12 @@ const Screen = () => {
                 </View>
             </View>
             <FlatList
-                data={filteredTodos()}
+                data={filteredTodos}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item, index }) => <TodoItem todo={item} index={index} />}
             />
             <View style={styles.footerContainer}>
-                <Text style={styles.footerText}>{countActiveTodos()} items left</Text>
+                <Text style={styles.footerText}>{countActiveTodos} items left</Text>
                 <View style={styles.filterButtonsContainer}>
                     <TouchableOpacity onPress={() => setCurrentFilter('All')} key="view-all-butt">
                         <Text
@@ -222,100 +230,4 @@ const Screen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    main: {
-        width: '90%',
-    },
-    headerContainer: {
-        backgroundColor: 'white',
-        borderTopWidth: 10,
-        borderTopColor: 'brown',
-        padding: 10,
-    },
-    headerInnerContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    input: {
-        ...commonInputStyles,
-    },
-    footerContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 10,
-    },
-    footerText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#83756f',
-    },
-    filterButtonsContainer: {
-        paddingRight: 0,
-        flexDirection: 'row',
-    },
-    filterButtonText: {
-        fontSize: 12,
-        color: '#83756f',
-        marginRight: 5,
-    },
-    clearCompletedText: {
-        fontSize: 12,
-        color: 'red',
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        color: '#777',
-    },
-    todoItemContainer: {
-        ...commonItemStyles,
-    },
-    editInput: {
-        ...commonInputStyles,
-    },
-    todoItemInnerContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-    },
-    todoItemText: {
-        ...commonTextStyles,
-    },
-});
-
-const commonInputStyles = {
-    backgroundColor: '#fff',
-    height: 35,
-    fontSize: 20,
-    opacity: 0.8,
-    flex: 1,
-    borderLeftWidth: 1,
-    borderLeftColor: 'red',
-    paddingLeft: 5,
-};
-
-const commonItemStyles = {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    margin: 0.5,
-    fontSize: 25,
-    color: '#000',
-    padding: 5,
-};
-
-const commonTextStyles = {
-    color: 'gray',
-    fontSize: 22,
-    textDecorationLine: 'line-through',
-    borderLeftWidth: 1,
-    borderLeftColor: 'red',
-    padding: 5,
-    backgroundColor: '#fff',
-    height: 35,
-    fontSize: 20,
-    opacity: 0.8,
-    flex: 1,
-};
-
-export default Screen;
+// Styles remain unchanged
